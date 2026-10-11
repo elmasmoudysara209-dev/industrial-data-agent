@@ -243,3 +243,37 @@ def run_tool(name: str, args: dict) -> dict:
         return TOOL_FUNCTIONS[name](**(args or {}))
     except Exception as e:
         return {"error": f"{type(e).__name__} : {e}"}
+    # ======================================================================
+# v2 : graphique générique construit à partir du résultat d'UNE requête SQL
+# ======================================================================
+def chart_from_rows(lignes: list[dict], type_graphique: str, x: str = None, y: str = None,
+                    couleur: str = None, titre: str = ""):
+    """Dessine barres / courbe / pareto / histogramme à partir des lignes d'un résultat SQL."""
+    df = pd.DataFrame(lignes)
+    if df.empty:
+        return None
+    for col in (x, y, couleur):
+        if col and col not in df.columns:
+            raise ValueError(f"colonne '{col}' absente du résultat (colonnes : {list(df.columns)})")
+
+    # Les dates arrivent en texte "AAAA-MM-JJ" : on les convertit pour un axe temporel propre
+    if x and df[x].dtype == object and df[x].astype(str).str.match(r"^\d{4}-\d{2}-\d{2}").all():
+        df[x] = pd.to_datetime(df[x])
+
+    if type_graphique == "barres":
+        fig = px.bar(df, x=x, y=y, color=couleur, barmode="group", title=titre)
+    elif type_graphique == "courbe":
+        fig = px.line(df.sort_values(x), x=x, y=y, color=couleur, title=titre)
+    elif type_graphique == "histogramme":
+        fig = px.histogram(df, x=x or y, color=couleur, nbins=30, title=titre)
+    elif type_graphique == "pareto":
+        df = df.sort_values(y, ascending=False)
+        cumul = df[y].cumsum() / df[y].sum() * 100
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_bar(x=df[x], y=df[y], name=y)
+        fig.add_scatter(x=df[x], y=cumul, name="% cumulé", mode="lines+markers", secondary_y=True)
+        fig.update_yaxes(title_text="% cumulé", range=[0, 105], secondary_y=True)
+        fig.update_layout(title=titre)
+    else:
+        return None
+    return fig
