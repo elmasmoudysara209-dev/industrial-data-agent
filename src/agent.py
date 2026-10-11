@@ -1,5 +1,5 @@
 """
-Agent v2 (architecture « text-to-SQL », conseillée par un ami).
+Agent v2 (architecture « text-to-SQL »).
 
 UN SEUL appel au LLM renvoie : la requête SQL + l'explication + le graphique voulu.
 Ensuite Python exécute la requête (lecture seule) et affiche le résultat.
@@ -18,8 +18,11 @@ from tools import chart_from_rows, detect_anomaly, run_sql
 load_dotenv()
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
-MAX_MEMOIRE = 4          # nombre d'échanges conservés dans le contexte
-client = genai.Client()
+MODEL_SECOURS = os.getenv("GEMINI_MODEL_SECOURS", "gemini-3.1-flash-lite")
+THINKING = os.getenv("THINKING_LEVEL", "low")      # minimal | low | medium | high
+MAX_MEMOIRE = 4                                    # nombre d'échanges conservés dans le contexte
+TIMEOUT_S = int(os.getenv("TIMEOUT_S", "15"))        # délai maximum d'un appel, en secondes
+client = genai.Client(http_options=types.HttpOptions(timeout=TIMEOUT_S * 1000))   # en millisecondes
 
 SYSTEM_PROMPT = """Tu es « Industrial Data Assistant ». Tu réponds à des questions sur des données de production
 industrielle en appelant TOUJOURS la fonction `repondre`, une seule fois.
@@ -102,20 +105,37 @@ CONFIG = types.GenerateContentConfig(
     tool_config=types.ToolConfig(
         function_calling_config=types.FunctionCallingConfig(mode="ANY", allowed_function_names=["repondre"])
     ),
+    thinking_config=types.ThinkingConfig(thinking_level=THINKING),
 )
+
+CONFIG_REDACTION = types.GenerateContentConfig(
+    thinking_config=types.ThinkingConfig(thinking_level=THINKING)
+)
+
+
+def _generate(prompt: str, config):
+    """Appelle Gemini avec un délai maximum. En cas de lenteur ou d'erreur serveur
+    (429, 500, 503, 504), bascule tout de suite sur le modèle de secours."""
+    essais = [MODEL, MODEL_SECOURS]
+    for i, modele in enumerate(essais):
+        debut = time.time()
+        try:
+            resp = client.models.generate_content(model=modele, contents=prompt, config=config)
+            print(f"[debug] {modele} : {time.time() - debut:.1f} s (essai {i + 1})")
+            return resp
+        except Exception as e:
+            code = getattr(e, "code", None)
+            print(f"[debug] {modele} : ÉCHEC après {time.time() - debut:.1f} s (essai {i + 1}) : "
+                  f"{type(e).__name__} {code or ''} {str(e)[:150]}")
+            lent = "timeout" in type(e).__name__.lower() or "timed out" in str(e).lower()
+            if i < len(essais) - 1 and (lent or code in (429, 500, 503, 504)):
+                continue
+            raise
 
 
 def _plan(prompt: str) -> dict:
     """UN appel LLM. Renvoie les arguments de la fonction `repondre`."""
-    for tentative in range(3):
-        try:
-            resp = client.models.generate_content(model=MODEL, contents=prompt, config=CONFIG)
-            break
-        except errors.APIError as e:
-            if e.code in (429, 503) and tentative < 2:      # quota gratuit atteint : on patiente
-                time.sleep(15 * (tentative + 1))
-                continue
-            raise
+    resp = _generate(prompt, CONFIG)
     appels = resp.function_calls
     if not appels:
         raise ValueError("Le modèle n'a pas renvoyé de plan d'action.")
@@ -138,7 +158,7 @@ def _rediger(question: str, sql: str, lignes: list) -> str:
               f"Résultat (JSON, extrait) : {json.dumps(lignes[:30], ensure_ascii=False, default=str)}\n\n"
               "Rédige une réponse concise (3 phrases maximum) dans la langue de la question. "
               "Utilise UNIQUEMENT les chiffres du résultat ; ratios en % avec une décimale ; ne parle pas de SQL.")
-    resp = client.models.generate_content(model=MODEL, contents=prompt)
+    resp = _generate(prompt, CONFIG_REDACTION)
     return resp.text or ""
 
 
