@@ -1,0 +1,31 @@
+id,categorie,question,attendu
+Q01,KPI,Quel est le TRS de la ligne L2 en septembre ?,0.80825
+Q02,KPI,Quelle est la disponibilité de L4 en août ?,0.9482862903225806
+Q03,KPI,Quel est le taux de rebuts global sur toute la période ?,0.019806364652508384
+Q04,KPI,Quelle est la performance de L1 en juillet ?,0.9227114310866708
+Q05,KPI,Quel est le TRS de chaque ligne en septembre ?,"{'L1': np.float64(0.8363541666666667), 'L2': np.float64(0.80825), 'L3': np.float64(0.7912797619047621), 'L4': np.float64(0.8701234567901233), 'L5': np.float64(0.7163762626262626)}"
+Q06,Classement,Quelle ligne a le pire TRS en septembre ?,L5
+Q07,Classement,Quelle ligne a le meilleur TRS en septembre ?,L4
+Q08,Classement,Quelle ligne a le taux de rebuts le plus élevé sur toute la période ?,L3
+Q09,Classement,Quelle équipe a le meilleur TRS en juin ?,Matin
+Q10,SQL libre,Combien de pièces a produit L1 en juin ?,73782
+Q11,SQL libre,Combien de pièces bonnes au total en septembre ?,323337
+Q12,SQL libre,Combien de minutes d'arrêt au total pour L2 en mai ?,3840.9999999999995
+Q13,SQL libre,Combien d'arrêts y a-t-il eu sur L3 en février ?,236
+Q14,Arrêts,Quelle est la cause d'arrêt la plus longue (en minutes) sur toute la période ?,Panne mécanique
+Q15,Arrêts,Quelles sont les 3 principales causes d'arrêt de L2 en minutes ?,"['Panne mécanique', 'Changement de série', 'Manque matière']"
+Q16,Arrêts,Combien de minutes d'arrêt pour « Panne mécanique » en septembre ?,6418.9
+Q17,Qualité,Quel est le défaut qualité le plus fréquent ?,Rayure
+Q18,Qualité,Combien de pièces défectueuses de type Soudure sur L5 ?,1929
+Q19,Livraisons,Quel est l'OTD global des commandes ?,0.7983333333333333
+Q20,Livraisons,Quel est le taux de service global ?,0.9888179035180787
+Q21,Livraisons (EN),What is the on-time delivery rate for product REF-A?,0.8105960264900662
+Q22,Stocks,Quel est le stock de REF-B au 30 septembre ?,5202
+Q23,Évolution,Compare le TRS de L3 en février et en mars.,"[np.float64(0.7835034013605441), np.float64(0.7424539170506912)]"
+Q24,Évolution,Quelle est l'évolution mensuelle du TRS de L5 de janvier à septembre ?,"[np.float64(0.7931573802541544), np.float64(0.7977813852813853), np.float64(0.803873411534702), np.float64(0.7948611111111111), np.float64(0.7920576735092865), np.float64(0.8038005050505052), np.float64(0.8043132942326492), np.float64(0.7740957966764418), np.float64(0.7163762626262626)]"
+Q25,Mémoire,Quel est le TRS de L1 en septembre ?,0.8363541666666667
+Q26,Mémoire,Et pour L4 ?,0.8701234567901233
+Q27,Anomalies,Y a-t-il des anomalies de rebuts sur L3 ?,"['2026-03-10', '2026-03-11', '2026-03-12', '2026-03-13', '2026-03-14', '2026-03-15', '2026-03-16', '2026-03-17', '2026-03-18', '2026-03-19', '2026-03-20']"
+Q28,Anomalies,Y a-t-il une dérive de la disponibilité sur L5 ?,True
+Q29,Anomalies,Y a-t-il une dérive de la disponibilité sur L1 ?,False
+Q30,Hors périmètre,Quel temps fait-il à Meknès ?,None

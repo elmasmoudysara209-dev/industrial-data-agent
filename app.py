@@ -22,6 +22,7 @@ if not DB.exists():
 try:
     from agent import ask
     from kpi import livraison_kpis, production_kpis
+    from report import alertes_periode
 except Exception as e:
     st.error(f"Impossible de démarrer l'agent : {e}\n\nVérifie ton fichier .env (GEMINI_API_KEY).")
     st.stop()
@@ -44,6 +45,12 @@ def vue_ensemble():
         "rebuts": (float(sep["taux_rebuts"]), float(aou["taux_rebuts"])),
         "otd": (float(ls["otd"]), float(la["otd"])),
     }
+
+
+# --- Alertes des 7 derniers jours (règle des 2 écarts-types, sans IA) ---
+@st.cache_data
+def alertes_recentes():
+    return alertes_periode("2026-09-24", "2026-09-30")
 
 
 # --- Mémoire de la session ----------------------------------------------
@@ -99,6 +106,16 @@ c2.metric("Disponibilité (sept.)", f"{v['dispo'][0] * 100:.1f} %",
 c3.metric("Taux de rebuts (sept.)", f"{v['rebuts'][0] * 100:.2f} %",
           f"{(v['rebuts'][0] - v['rebuts'][1]) * 100:+.2f} pt vs août", delta_color="inverse")
 c4.metric("OTD (sept.)", f"{v['otd'][0] * 100:.1f} %", f"{(v['otd'][0] - v['otd'][1]) * 100:+.1f} pt vs août")
+
+alertes = alertes_recentes()
+if alertes:
+    with st.expander(f"🚨 {len(alertes)} alerte(s) sur les 7 derniers jours (24 au 30 sept.)", expanded=True):
+        for a in alertes[:8]:
+            val = f"{a['valeur'] * 100:.2f} %" if a["kind"] == "pct2" else f"{a['valeur'] * 100:.1f} %"
+            st.markdown(f"- **{a['ligne']}** : {a['kpi']} dégradé sur {a['nb_jours']} jour(s) "
+                        f"(pire jour : {a['pire_jour']}, {val})")
+else:
+    st.success("✅ Aucune alerte sur les 7 derniers jours.")
 st.divider()
 
 

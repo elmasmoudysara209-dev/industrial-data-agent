@@ -212,7 +212,8 @@ def detect_anomaly(kpi: str = "taux_rebuts", ligne: str = None, seuil: float = 2
             "moyenne": round(float(moy), 4),
             "ecart_type": round(float(ecart_type), 4),
             "nb_jours_anormaux": len(pics),
-            "jours_anormaux": _rows(pics[["jour", col, "z", "sens"]].round(3), 15),
+            "jours_anormaux": _rows(pics[["jour", col, "z", "sens"]].assign(
+                **{col: pics[col].round(3), "z": pics["z"].round(3)}), 15),
             "derive_detectee": bool(derive),
             "derive_detail": {
                 "moyenne_30_derniers_jours": round(float(recent.mean()), 4),

@@ -50,7 +50,11 @@ def _filtres(colonne_date: str, ligne=None, date_debut=None, date_fin=None):
         where.append(f"{colonne_date} <= CAST(? AS DATE)")
         params.append(date_fin)
     return " AND ".join(where), params
-
+def _arrondir(df: pd.DataFrame, n: int = 4) -> pd.DataFrame:
+    """Arrondit uniquement les colonnes numériques (évite l'avertissement sur les dates)."""
+    num = df.select_dtypes("number").columns
+    df[num] = df[num].round(n)
+    return df
 
 # ----------------------------------------------------------------------
 # KPI DE PRODUCTION : disponibilité, performance, qualité, TRS, rebuts
@@ -102,7 +106,7 @@ def production_kpis(ligne=None, date_debut=None, date_fin=None, groupby=None) ->
     df["qualite"] = df["bonnes"] / df["produites"]
     df["trs"] = df["disponibilite"] * df["performance"] * df["qualite"]
     df["taux_rebuts"] = df["rebuts"] / df["produites"]
-    return df.drop(columns=["theorique"]).round(4)
+    return _arrondir(df.drop(columns=["theorique"]))
 
 
 # ----------------------------------------------------------------------
@@ -160,4 +164,4 @@ def livraison_kpis(date_debut=None, date_fin=None, groupby=None) -> pd.DataFrame
 
     df["otd"] = df["a_l_heure"] / df["nb_commandes"]
     df["taux_service"] = df["livre"] / df["commande"]
-    return df.round(4)
+    return _arrondir(df)

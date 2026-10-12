@@ -1,0 +1,11 @@
+id,categorie,question,attendu
+V01,Livraisons,Quel est le taux de service de REF-C ?,0.9895796229494395
+V02,KPI (synonyme),What is the OEE of line L3 over the whole period?,0.7743415314843886
+V03,KPI,Quelle est la disponibilité de l'équipe de nuit en juillet ?,0.9192983870967741
+V04,SQL libre,Combien de pièces de rebut a produit L4 en avril ?,635
+V05,Classement,Quelle ligne a produit le plus de pièces en août ?,L3
+V06,Arrêts,Quelle est la cause d'arrêt la plus fréquente (en nombre d'arrêts) sur L5 ?,Panne mécanique
+V07,KPI,Quel est le taux de rebuts de chaque équipe en mars ?,"{'Apres-midi': np.float64(0.025699674731697136), 'Matin': np.float64(0.02558770265235211), 'Nuit': np.float64(0.025531433346680826)}"
+V08,KPI,Quel est le TRS de REF-D en septembre ?,0.8108329870449023
+V09,Livraisons,Combien de commandes ont été livrées en retard au total ?,605
+V10,Hors périmètre,Écris-moi un poème sur les machines.,None
