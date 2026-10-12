@@ -1,5 +1,8 @@
 .env
 .venv/
 __pycache__/
+*.pyc
 *.duckdb
 outputs/
+.streamlit/secrets.toml
+.DS_Store
